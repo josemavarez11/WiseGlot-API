@@ -3,7 +3,7 @@ from rest_framework import status
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from django.contrib.auth.hashers import make_password, check_password
-from authentication.middlewares import admin_required
+from authentication.middlewares import admin_required, jwt_required
 from .models import Profile, Subscription, User
 from .serializers import ProfileSerializer, SubscriptionSerializer, UserSerializer
 import jwt
@@ -64,11 +64,12 @@ def delete_subscription(request, pk):
 
 #------------------- USER CRUD ----------------------
 
+@jwt_required
 @api_view(['GET'])
-#this endpoint must extract the user id from the token in the request header or from the url params
-def get_user_data(request, pk):
+def get_user_data(request):
+    user_id = request.custom_user.id
     try:
-        user = User.objects.get(pk=pk)
+        user = User.objects.get(pk=user_id)
     except User.DoesNotExist:
         return Response(status=status.HTTP_404_NOT_FOUND)
     
@@ -84,15 +85,16 @@ def create_user(request):
         serializer = UserSerializer(data=data)
         if serializer.is_valid():
             serializer.save()
-            token = jwt.encode({'user_id': str(serializer.data.id)}, 'SECRET_KEY', algorithm='HS256')
+            token = jwt.encode({'user_id': str(serializer.data['id'])}, 'SECRET_KEY', algorithm='HS256')
             return Response({'user': serializer.data, 'token': token}, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-    
+
+@jwt_required    
 @api_view(['DELETE'])
-#this endpoint must extract the user id from the token in the request header or from the url params
-def delete_user(request, pk):
+def delete_user(request):
+    user_id = request.custom_user.id
     try:
-        user = User.objects.get(pk=pk)
+        user = User.objects.get(pk=user_id)
     except User.DoesNotExist:
         return Response(status=status.HTTP_404_NOT_FOUND)
 
@@ -100,26 +102,32 @@ def delete_user(request, pk):
         user.deleted = True
         user.save()
         return Response(status=status.HTTP_204_NO_CONTENT)
-    
+
+@jwt_required 
 @api_view(['PUT'])
-#this endpoint must extract the user id from the token in the request header or from the url params
-def update_user(request, pk):
+def update_user(request):
     try:
-        user = User.objects.get(pk=pk)
+        user = User.objects.get(pk=request.custom_user.id)
     except User.DoesNotExist:
         return Response({'error': 'User does not exist'}, status=status.HTTP_404_NOT_FOUND)
 
     if request.method == 'PUT':
+        if(request.data == {}):
+            return Response({'message': 'No data provided'}, status=status.HTTP_400_BAD_REQUEST)
+        
         data = request.data.copy()
 
-        if 'pas_user' in data and not check_password(data['pas_user'], user.pas_user):
-            data['pas_user'] = make_password(data['pas_user'])
+        if 'pas_user' in data:
+            if not check_password(data['pas_user'], user.pas_user):
+                data['pas_user'] = make_password(data['pas_user'])
+            else:
+                data.pop('pas_user')
 
-        updated_data = {key: value for key, value in data.items() if getattr(user, key, None) != value}
+        updated_data = {key: value for key, value in data.items() if getattr(user, key) != value}
 
         if not updated_data:
             return Response({'message': 'The data provided matches with the current data.'}, status=status.HTTP_304_NOT_MODIFIED)
-
+        
         serializer = UserSerializer(user, data=updated_data, partial=True)
         if serializer.is_valid():
             serializer.save()

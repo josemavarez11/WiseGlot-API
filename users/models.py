@@ -19,8 +19,8 @@ class Profile(models.Model):
 
 class User(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
-    id_subscription_user = models.ForeignKey(Subscription, on_delete=models.CASCADE)
-    id_profile_user = models.ForeignKey(Profile, on_delete=models.CASCADE)
+    id_subscription_user = models.ForeignKey(Subscription, on_delete=models.CASCADE, default='b6f69838-82c8-454e-9937-9ab61d235400')
+    id_profile_user = models.ForeignKey(Profile, on_delete=models.CASCADE, default='5eab56af-60f5-4290-af60-a0dda32ee1af')
     nam_user = models.CharField(max_length=300)
     ema_user = models.CharField(max_length=300)
     pas_user = models.CharField(max_length=120)
