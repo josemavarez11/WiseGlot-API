@@ -41,6 +41,7 @@ class UserPreference(models.Model):
 
     class Meta:
         db_table = 'user_preference'
+        unique_together = ('id_user', 'id_native_language', 'id_language_to_study', 'id_language_to_study_level', 'id_reason_to_study')
 
 
 class UserPreferenceTopic(models.Model):
@@ -50,3 +51,4 @@ class UserPreferenceTopic(models.Model):
 
     class Meta:
         db_table = 'user_preference_topic'
+        unique_together = ('id_user_preference', 'id_topic')
