@@ -68,10 +68,10 @@ WSGI_APPLICATION = 'server.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'wiseglotTestDb',
+        'NAME': 'wiseglot',
         'USER': 'postgres',
         'PASSWORD': 'jose.29932288',
-        'HOST': 'localhost',
+        'HOST': 'wiseglot-test.clxcioujlkui.us-east-2.rds.amazonaws.com',
         'PORT': '5432',
     }
 }
