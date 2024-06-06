@@ -13,7 +13,9 @@ SECRET_KEY = 'django-insecure-)433z@!3k3_olhlop-2$&ef0)5(%z+xb3cxu5k)$137b4fy^54
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = [
+    'wiseglot-api.onrender.com'
+]
 
 
 # Application definition
