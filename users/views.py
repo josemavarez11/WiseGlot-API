@@ -80,6 +80,10 @@ def get_user_data(request):
 @api_view(['POST'])
 def create_user(request):
     if request.method == 'POST':
+        ema_user = request.data.get('ema_user')
+        if User.objects.filter(ema_user=ema_user).exists():
+            return Response({'message': 'Email already exists'}, status=status.HTTP_409_CONFLICT)
+        
         data = request.data.copy()
         data['pas_user'] = make_password(data['pas_user'])
         serializer = UserSerializer(data=data)
