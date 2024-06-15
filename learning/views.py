@@ -8,6 +8,27 @@ from users.models import User
 
 # Create your views here.
 
+@api_view(['GET'])
+def get_preference_options(request):
+    languages = Language.objects.all()
+    language_levels = LanguageLevel.objects.all()
+    reasons_to_study = ReasonToStudy.objects.all()
+    topics = Topic.objects.all()
+
+    languages_serializer = LanguageSerializer(languages, many=True)
+    language_levels_serializer = LanguageLevelSerializer(language_levels, many=True)
+    reasons_to_study_serializer = ReasonToStudySerializer(reasons_to_study, many=True)
+    topics_serializer = TopicSerializer(topics, many=True)
+
+    response_data = {
+        "languages": languages_serializer.data,
+        "language_levels": language_levels_serializer.data,
+        "reasons_to_study": reasons_to_study_serializer.data,
+        "topics": topics_serializer.data
+    }
+
+    return Response(response_data, status=status.HTTP_200_OK)
+
 #------------------- TOPICS CRUD -------------------
 
 @admin_required

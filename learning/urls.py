@@ -2,6 +2,7 @@ from django.urls import path
 from . import views
 
 urlpatterns = [
+    path('get-preference-options/', views.get_preference_options, name='get-preference-options'),
     path('create-language/', views.create_language, name='create-language'),
     path('delete-language/<uuid:pk>/', views.delete_language, name='delete-language'),
     path('update-language/<uuid:pk>/', views.update_language, name='update-language'),
@@ -18,13 +19,12 @@ urlpatterns = [
     path('delete-topic/<uuid:pk>/', views.delete_topic, name='delete-topic'),
     path('update-topic/<uuid:pk>/', views.update_topic, name='update-topic'),
     path('get-topics/', views.get_topics, name='get-topics'),
-
-    path('create-user-preference/', views.create_user_preference, name='create-user-preference'), #OK
-    path('delete-user-preference/<uuid:pk>/', views.delete_user_preference, name='delete-user-preference'), #just admin
-    path('update-user-preference/<uuid:pk>/', views.update_user_preference, name='update-user-preference'), #just admin
-    path('get-user-preference/', views.get_user_preference, name='get-user-preference'), #OK
-    path('create-user-preference-topic/', views.create_user_preference_topic, name='create-user-preference-topic'), #OK
-    path('delete-user-preference-topic/<uuid:pk>/', views.delete_user_preference_topic, name='delete-user-preference-topic'), #OK
-    path('update-user-preference-topic/<uuid:pk>/', views.update_user_preference_topic, name='update-user-preference-topic'), #OK
-    path('get-user-preference-topics/', views.get_user_preference_topics, name='get-user-preference-topics'), #OK
+    path('create-user-preference/', views.create_user_preference, name='create-user-preference'),
+    path('delete-user-preference/<uuid:pk>/', views.delete_user_preference, name='delete-user-preference'),
+    path('update-user-preference/<uuid:pk>/', views.update_user_preference, name='update-user-preference'),
+    path('get-user-preference/', views.get_user_preference, name='get-user-preference'),
+    path('create-user-preference-topic/', views.create_user_preference_topic, name='create-user-preference-topic'),
+    path('delete-user-preference-topic/<uuid:pk>/', views.delete_user_preference_topic, name='delete-user-preference-topic'),
+    path('update-user-preference-topic/<uuid:pk>/', views.update_user_preference_topic, name='update-user-preference-topic'),
+    path('get-user-preference-topics/', views.get_user_preference_topics, name='get-user-preference-topics'),
 ]
