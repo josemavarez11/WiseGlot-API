@@ -26,6 +26,7 @@ class User(models.Model):
     pas_user = models.CharField(max_length=120)
     created_at = models.DateTimeField(auto_now_add=True)
     deleted = models.BooleanField(default=False)
+    profile_img_url = models.CharField(default='https://w7.pngwing.com/pngs/81/570/png-transparent-profile-logo-computer-icons-user-user-blue-heroes-logo.png')
 
     class Meta:
         db_table = 'user'

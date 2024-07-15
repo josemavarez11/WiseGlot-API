@@ -76,7 +76,18 @@ def get_user_data(request):
     
     if request.method == 'GET':
         serializer = UserSerializer(user)
-        return Response(serializer.data, status=status.HTTP_200_OK)
+
+        user_subscription = Subscription.objects.get(pk=serializer.data['id_subscription_user'])
+
+        formated_data = {
+            "id": serializer.data['id'],
+            "nam_user": serializer.data['nam_user'],
+            "ema_user": serializer.data['ema_user'],
+            "des_subscription": user_subscription.des_subscription,
+            "profile_img_url": serializer.data['profile_img_url']
+        }
+
+        return Response(formated_data, status=status.HTTP_200_OK)
     
 def get_user_preferences_data(user_id):
     try:

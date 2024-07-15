@@ -16,6 +16,30 @@ load_dotenv()
 # Create your views here.
 
 @jwt_required
+@api_view(['GET'])
+def get_messages_by_user(request):
+    id_user = request.custom_user.id
+    if id_user is None:
+        return Response(status=status.HTTP_401_UNAUTHORIZED)
+
+    if request.method == 'GET':
+        messages = Message.objects.filter(id_user=id_user)
+        serializer = MessageSerializer(messages, many=True)
+
+        if serializer.data == []:
+            return Response('No messages found', status.HTTP_204_NO_CONTENT)
+
+        formated_data = []
+
+        for message in serializer.data:
+            formated_data.append({
+                "con_message": message['con_message'],
+                "con_response": message['con_response']
+            })
+
+        return Response(formated_data, status.HTTP_200_OK)
+
+@jwt_required
 @api_view(['POST'])
 def send_message(request):
     id_user = request.custom_user.id
