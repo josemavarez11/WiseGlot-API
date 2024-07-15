@@ -1,8 +1,12 @@
+import os
+from dotenv import load_dotenv
 from pathlib import Path
+
+load_dotenv()
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-SECRET_KEY = 'django-insecure-)433z@!3k3_olhlop-2$&ef0)5(%z+xb3cxu5k)$137b4fy^54'
+SECRET_KEY = 'django-insecure-)433z@!3k3_olhlop-2$&ef0)5(%z+xb3cxu5k)$137b4fy^54' #
 
 DEBUG = True
 
@@ -23,6 +27,7 @@ INSTALLED_APPS = [
     'users',
     'learning',
     'authentication',
+    'ia'
 ]
 
 MIDDLEWARE = [
@@ -58,11 +63,11 @@ WSGI_APPLICATION = 'server.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'wiseglot',
-        'USER': 'postgres',
-        'PASSWORD': 'jose.29932288',
-        'HOST': 'wiseglot-test.clxcioujlkui.us-east-2.rds.amazonaws.com',
-        'PORT': '5432',
+        'NAME': os.getenv('PG_DB_NAME'),
+        'USER': os.getenv('PG_DB_USER'),
+        'PASSWORD': os.getenv('PG_DB_PASSWORD'),
+        'HOST': os.getenv('PG_DB_HOST'),
+        'PORT': os.getenv('PG_DB_PORT')
     }
 }
 
@@ -105,16 +110,12 @@ AUTH_PASSWORD_VALIDATORS = [
 ]
 
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
-EMAIL_HOST = 'smtp.gmail.com'
-EMAIL_PORT = 587
-EMAIL_HOST_USER = 'josemmr311@gmail.com'
-EMAIL_HOST_PASSWORD = 'zeat rvmj mfsy jdja'
+EMAIL_HOST = os.getenv('EMAIL_HOST')
+EMAIL_PORT = os.getenv('EMAIL_PORT')
+EMAIL_HOST_USER = os.getenv('josemmr311@gmail.com')
+EMAIL_HOST_PASSWORD = os.getenv('zeat rvmj mfsy jdja')
 EMAIL_USE_TLS = True
 EMAIL_USE_SSL = False
-
-
-# Internationalization
-# https://docs.djangoproject.com/en/5.0/topics/i18n/
 
 LANGUAGE_CODE = 'en-us'
 
@@ -124,13 +125,6 @@ USE_I18N = True
 
 USE_TZ = True
 
-
-# Static files (CSS, JavaScript, Images)
-# https://docs.djangoproject.com/en/5.0/howto/static-files/
-
 STATIC_URL = 'static/'
-
-# Default primary key field type
-# https://docs.djangoproject.com/en/5.0/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
