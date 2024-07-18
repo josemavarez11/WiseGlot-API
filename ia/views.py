@@ -10,65 +10,29 @@ from .utils import build_user_presentation_msg
 from .models import Message
 from .serializers import MessageSerializer
 from users.views import get_user_preferences_data
-from users.models import User
 
 load_dotenv()
-# Create your views here.
 
 @jwt_required
 @api_view(['GET'])
 def get_messages_by_user(request):
     id_user = request.custom_user.id
-    if id_user is None:
-        return Response(status=status.HTTP_401_UNAUTHORIZED)
-
-    if request.method == 'GET':
-        messages = Message.objects.filter(id_user=id_user)
-        serializer = MessageSerializer(messages, many=True)
-
-        if serializer.data == []:
-            return Response('No messages found', status.HTTP_204_NO_CONTENT)
-
-        formated_data = []
-
-        for message in serializer.data:
-            formated_data.append({
-                "con_message": message['con_message'],
-                "con_response": message['con_response']
-            })
-
-        return Response(formated_data, status.HTTP_200_OK)
-
-@jwt_required
-@api_view(['POST'])
-def send_message(request):
-    id_user = request.custom_user.id
-    data = request.data.copy()
-    if id_user is None:
-        return Response(status=status.HTTP_401_UNAUTHORIZED)
     
-    try:
-        user = User.objects.get(pk=id_user)
-        data['id_user'] = user.id
-    except User.DoesNotExist:
-        return Response(status=status.HTTP_404_NOT_FOUND)
-    
-    if request.method == 'POST':
-        con_message = request.data.get('con_message')
-        if con_message is None:
-            return Response({'error': 'Please provide content for a message'}, status=400)
+    messages = Message.objects.filter(id_user=id_user)
+    serializer = MessageSerializer(messages, many=True)
 
-    create_msg_response(user.id, con_message)
-    con_response = create_msg_response(user.id, con_message)
-    data['con_response'] = con_response
+    if serializer.data == []:
+        return Response('No messages found', status.HTTP_204_NO_CONTENT)
 
-    serializer = MessageSerializer(data=data)
+    formatted_data = [
+        {
+            "con_message": message['con_message'],
+            "con_response": message['con_response']
+        }
+        for message in serializer.data
+    ]
 
-    if serializer.is_valid():
-        serializer.save()
-        return Response({'con_message': con_response}, status=200)
-
-
+    return Response(formatted_data, status.HTTP_200_OK)
 
 def create_msg_response(user_id, content_message):
     api_key = os.getenv('OPENAI_API_KEY')
@@ -103,7 +67,7 @@ def create_msg_response(user_id, content_message):
             ]
         )
     except PermissionDeniedError as e:
-        raise RuntimeError("Country, region, or territory not supported") from e
+        return { "error": "Country, region, or territory not supported" }
     except OpenAIError as e:
         raise RuntimeError("OpenAI API request failed") from e
     except Exception as e:

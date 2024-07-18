@@ -1,7 +1,11 @@
 import jwt
+import os
 from django.http import JsonResponse
 from users.models import User
 from functools import wraps
+from dotenv import load_dotenv
+
+load_dotenv()
 
 class JWTMiddleware:
     def __init__(self, get_response=None):
@@ -19,7 +23,8 @@ class JWTMiddleware:
 
     @staticmethod
     def decode_jwt_token(token):
-        return jwt.decode(token, 'SECRET_KEY', algorithms=['HS256'])
+        JWT_SECRET_KEY = os.getenv('JWT_SECRET_KEY')
+        return jwt.decode(token, JWT_SECRET_KEY, algorithms=['HS256'])
 
     @staticmethod
     def get_user_from_token(decoded_token):

@@ -21,13 +21,15 @@ INSTALLED_APPS = [
     'django.contrib.contenttypes',
     'django.contrib.sessions',
     'django.contrib.messages',
+    'daphne',
     'django.contrib.staticfiles',
     'rest_framework',
     'corsheaders',
     'users',
     'learning',
     'authentication',
-    'ia'
+    'ia',
+    'channels'
 ]
 
 MIDDLEWARE = [
@@ -58,7 +60,14 @@ TEMPLATES = [
     },
 ]
 
+CHANNEL_LAYERS = {
+    'default': {
+        'BACKEND': 'channels.layers.InMemoryChannelLayer',
+    },
+}
+
 WSGI_APPLICATION = 'server.wsgi.application'
+ASGI_APPLICATION = 'server.asgi.application'
 
 DATABASES = {
     'default': {
