@@ -36,13 +36,11 @@ class ChatConsumer(AsyncWebsocketConsumer):
         
         try:
             con_response = await database_sync_to_async(create_msg_response)(self.scope['user'].id, message)
+            await self.send(text_data=json.dumps(con_response))
         except:
             return await self.send(text_data=json.dumps({
                 "error": "Something went wrong trying to generate a response to the message sent."
             }))
-        
-        if con_response["error"] :
-            return await self.send(text_data=json.dumps(con_response))
 
         serializer_data = {
             "id_user": self.scope['user'].id,
@@ -53,14 +51,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
         serializer = MessageSerializer(data=serializer_data)
 
         if await database_sync_to_async(serializer.is_valid)():
-            await database_sync_to_async(serializer.save)()
-            serializer_data = serializer.data
-            serializer_data['id_user'] = str(serializer_data['id_user'])
-            await self.send(text_data=json.dumps(serializer_data))
-        else:
-            await self.send(text_data=json.dumps({
-                "error": "Something went wrong trying to save the response generated."
-            }))
+            return await database_sync_to_async(serializer.save)()
 
     @database_sync_to_async
     def save_message(self, user, message):
