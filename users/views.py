@@ -4,10 +4,14 @@ from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from django.contrib.auth.hashers import make_password, check_password
 from authentication.middlewares import admin_required, jwt_required
+from dotenv import load_dotenv
 from .models import Subscription, User
 from learning.models import UserPreference, UserPreferenceTopic
 from .serializers import ProfileSerializer, SubscriptionSerializer, UserSerializer
 import jwt
+import os
+
+load_dotenv()
 
 @admin_required
 @api_view(['POST'])
@@ -89,7 +93,8 @@ def create_user(request):
     serializer = UserSerializer(data=data)
     if serializer.is_valid():
         serializer.save()
-        token = jwt.encode({'user_id': str(serializer.data['id'])}, 'SECRET_KEY', algorithm='HS256')
+        JWT_SECRET_KEY = os.getenv('JWT_SECRET_KEY')
+        token = jwt.encode({'user_id': str(serializer.data['id'])}, JWT_SECRET_KEY, algorithm='HS256')
         return Response({'user': serializer.data, 'token': token}, status=status.HTTP_201_CREATED)
     
     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
