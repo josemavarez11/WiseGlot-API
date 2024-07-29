@@ -20,5 +20,6 @@ urlpatterns = [
     path('users/', include('users.urls')),
     path('auth/', include('authentication.urls')),
     path('learning/', include('learning.urls')),
-    path('ia/', include('ia.urls'))
+    path('ia/', include('ia.urls')),
+    path('decks/', include('decks.urls'))
 ]
