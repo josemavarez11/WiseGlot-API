@@ -24,7 +24,7 @@ class Deck(models.Model):
     new_cards_per_day = models.PositiveIntegerField(default=0)
     gra_interval = models.PositiveIntegerField(default=24)
     ste_value = models.PositiveIntegerField(default=10)
-    gra_max_interval = models.PositiveIntegerField(default=365)
+    gra_max_interval = models.PositiveIntegerField(default=180)
 
     class Meta:
         db_table = 'deck'
@@ -38,11 +38,11 @@ class Card(models.Model):
     las_interval_card = models.IntegerField(default=0)
     nex_interval_card = models.IntegerField(default=0)
     eas_factor_card = models.IntegerField(default=250)
-    val_card = models.CharField(max_length=512, null=False)
-    mea_card = models.CharField(max_length=512, null=False)
+    val_card = models.CharField(max_length=510, null=False)
+    mea_card = models.CharField(max_length=510, null=False)
     day_added_card = models.DateTimeField(null=False)
-    fir_review_card = models.DateTimeField(null=False)
-    las_review_card = models.DateTimeField(null=False)
+    fir_review_card = models.DateTimeField(null=True)
+    las_review_card = models.DateTimeField(null=True)
     rev_card = models.PositiveIntegerField(default=0)
 
     class Meta:
