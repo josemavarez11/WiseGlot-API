@@ -29,7 +29,7 @@ INSTALLED_APPS = [
     'learning',
     'authentication',
     'ia',
-    'decks',
+    'cards',
     'channels'
 ]
 

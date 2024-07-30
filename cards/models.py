@@ -2,7 +2,6 @@ from django.db import models
 from users.models import User
 import uuid
 
-# Create your models here.
 class LearningStep(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     des_learning_step = models.CharField(max_length=150, unique=True, null=False)
@@ -32,14 +31,14 @@ class Deck(models.Model):
 class Card(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     id_deck = models.ForeignKey(Deck, null=False, on_delete=models.CASCADE)
-    id_last_learning_step = models.ForeignKey(LearningStep, null=False, on_delete=models.CASCADE)
-    id_learning_phase = models.ForeignKey(LearningPhase, null=False, on_delete=models.CASCADE)
+    id_last_learning_step = models.ForeignKey(LearningStep, null=True, on_delete=models.CASCADE)
+    id_learning_phase = models.ForeignKey(LearningPhase, null=True, on_delete=models.CASCADE)
     lap_card = models.BooleanField(default=False)
     las_interval_card = models.IntegerField(default=0)
     nex_interval_card = models.IntegerField(default=0)
     eas_factor_card = models.IntegerField(default=250)
-    val_card = models.CharField(max_length=510, null=False)
-    mea_card = models.CharField(max_length=510, null=False)
+    val_card = models.CharField(max_length=512, null=False)
+    mea_card = models.CharField(max_length=512, null=False)
     day_added_card = models.DateTimeField(null=False)
     fir_review_card = models.DateTimeField(null=True)
     las_review_card = models.DateTimeField(null=True)

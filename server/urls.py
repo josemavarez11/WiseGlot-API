@@ -21,5 +21,5 @@ urlpatterns = [
     path('auth/', include('authentication.urls')),
     path('learning/', include('learning.urls')),
     path('ia/', include('ia.urls')),
-    path('decks/', include('decks.urls'))
+    path('cards/', include('cards.urls'))
 ]
