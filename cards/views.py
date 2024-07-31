@@ -9,7 +9,7 @@ from .models import Deck, Card, LearningPhase, LearningStep
 
 # Create your views here.
 
-@admin_required
+#@admin_required
 @api_view(['POST'])
 def create_learning_phase(request):
     serializer = LearningPhaseSerializer(data=request.data)
@@ -25,7 +25,7 @@ def get_learning_phases(request):
     serializer = LearningPhaseSerializer(learning_phases, many=True)
     return Response(serializer.data, status=status.HTTP_200_OK)
 
-@admin_required
+#@admin_required
 @api_view(['POST'])
 def create_learning_step(request):
     serializer = LearningStepSerializer(data=request.data)
@@ -44,17 +44,24 @@ def get_learning_steps(request):
 @jwt_required
 @api_view(['POST'])
 def create_deck(request):
-    serializer = DeckSerializer(data=request.data)
+    id_user = request.custom_user.id
+    data = request.data.copy()
+
+    data['id_user'] = id_user
+    serializer = DeckSerializer(data=data)
+    
     if serializer.is_valid():
         serializer.save()
         return Response(serializer.data, status=status.HTTP_201_CREATED)
-    
-    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    else:
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 @jwt_required
 @api_view(['GET'])
 def get_decks_by_user(request):
-    decks = Deck.objects.filter(id_user=request.user)
+    id_user = request.custom_user.id
+    decks = Deck.objects.filter(id_user=id_user)
+    
     serializer = DeckSerializer(decks, many=True)
     return Response(serializer.data, status=status.HTTP_200_OK)
 
@@ -64,6 +71,10 @@ def get_cards_by_deck(request, id_deck):
     deck = get_object_or_404(Deck, id=id_deck)
     cards = Card.objects.filter(id_deck=deck)
     serializer = CardSerializer(cards, many=True)
+
+    if serializer.data == []:
+        return Response('No cards found', status=status.HTTP_204_NO_CONTENT)
+    
     return Response(serializer.data, status=status.HTTP_200_OK)
 
 @jwt_required
