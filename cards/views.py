@@ -1,4 +1,3 @@
-from django.shortcuts import render
 from django.shortcuts import get_object_or_404
 from rest_framework import status
 from rest_framework.decorators import api_view
@@ -6,6 +5,9 @@ from rest_framework.response import Response
 from authentication.middlewares import admin_required, jwt_required
 from .serializers import DeckSerializer, CardSerializer, LearningPhaseSerializer, LearningStepSerializer
 from .models import Deck, Card, LearningPhase, LearningStep
+from .utils import register_new_card, parse_cards_string_to_dict, evaluate_card
+from ia.views import generate_study_cards
+from learning.models import UserPreference
 
 # Create your views here.
 
@@ -115,6 +117,10 @@ def reset_deck_progress(request, id_deck):
     deck = get_object_or_404(Deck, id=id_deck)
     cards = Card.objects.filter(id_deck=deck)
     for card in cards:
+        card.id_last_learning_step = None
+        card.id_learning_phase = None
+        card.fir_review_card = None
+        card.las_review_card = None
         card.lap_card = False
         card.las_interval_card = 0
         card.nex_interval_card = 0
@@ -122,3 +128,110 @@ def reset_deck_progress(request, id_deck):
         card.rev_card = 0
         card.save()
     return Response(status=status.HTTP_200_OK)
+
+@jwt_required
+@api_view(['POST'])
+def create_card(request):
+    id_deck = request.data.get('id_deck')
+    val_card = request.data.get('val_card')
+    mea_card = request.data.get('mea_card')
+
+    if not id_deck or not val_card or not mea_card:
+        return Response({'message': 'Missing data'}, status=status.HTTP_400_BAD_REQUEST)
+
+    deck = get_object_or_404(Deck, id=id_deck)
+    card = register_new_card(deck.id, val_card, mea_card)
+
+    return Response(card, status=status.HTTP_201_CREATED)
+
+@jwt_required
+@api_view(['DELETE'])
+def delete_card(request, id_card):
+    card = get_object_or_404(Card, id=id_card)
+    card.delete()
+    return Response(status=status.HTTP_204_NO_CONTENT)
+
+@jwt_required
+@api_view(['PUT'])
+def update_card(request, id_card):
+    card = get_object_or_404(Card, id=id_card)
+
+    if not request.data:
+        return Response({'message': 'No data provided'}, status=status.HTTP_400_BAD_REQUEST)
+    
+    data = request.data.copy()
+
+    if 'id_deck' in data:
+        data.pop('id_deck')
+
+    updated_data = {key: value for key, value in data.items() if getattr(card, key) != value}
+
+    if not updated_data:
+        return Response({'message': 'The data provided matches with the current data.'}, status=status.HTTP_304_NOT_MODIFIED)
+    
+    serializer = CardSerializer(card, data=updated_data, partial=True)
+    if serializer.is_valid():
+        serializer.save()
+        return Response(status=status.HTTP_204_NO_CONTENT)
+    
+    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+@jwt_required
+@api_view(['POST'])
+def generate_cards_with_ai(request):
+    id_user = request.custom_user.id
+    id_deck = request.data.get('id_deck')
+    cards_amount = request.data.get('cards_amount')
+    topic = request.data.get('topic')
+    user_prompt = request.data.get('user_prompt')
+
+    if not (id_deck and cards_amount) or not (topic or user_prompt):
+        return Response({'message': 'Missing data'}, status=status.HTTP_400_BAD_REQUEST)
+
+    user_preferences = UserPreference.objects.filter(id_user=id_user).select_related(
+        'id_native_language', 'id_language_to_study'
+    )
+
+    if not user_preferences:
+        return Response({'message': 'User preferences not found'}, status=status.HTTP_404_NOT_FOUND)
+
+    deck = get_object_or_404(Deck, id=id_deck)
+
+    try:
+        cards = generate_study_cards(
+            user_preferences[0].id_native_language.des_language,
+            user_preferences[0].id_language_to_study.des_language,
+            topic,
+            cards_amount,
+            user_prompt
+        )
+        cards_dict = parse_cards_string_to_dict(cards)
+        for key, value in cards_dict.items():
+            register_new_card(deck.id, key, value)
+    except Exception as e:
+        return Response({'message': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+    
+    return Response(cards, status=status.HTTP_201_CREATED)
+
+@jwt_required
+@api_view(['PUT'])
+def review_card(request, id_card):
+    id_learning_step = request.data.get('id_learning_step')
+    if not id_card or not id_learning_step:
+        return Response({'message': 'Missing data'}, status=status.HTTP_400_BAD_REQUEST)
+    
+    card = get_object_or_404(Card, id=id_card)
+    deck = get_object_or_404(Deck, id=card.id_deck.id)
+
+    try:
+        card_evaluated = evaluate_card(card, id_learning_step, deck.ste_value, deck.gra_interval, deck.gra_max_interval)
+    except Exception as e:
+        return Response({'message': f'Evaluation error: {str(e)}'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+    
+    try:
+        card_evaluated.save()
+        serialized_card = CardSerializer(card_evaluated)
+    except Exception as e:
+        return Response({'message': f'Saving error: {str(e)}'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+    
+    return Response(serialized_card.data, status=status.HTTP_200_OK)

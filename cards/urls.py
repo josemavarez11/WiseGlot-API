@@ -12,4 +12,9 @@ urlpatterns = [
     path('delete-deck/<uuid:id_deck>/', views.delete_deck, name='delete-deck'),
     path('update-deck/<uuid:id_deck>/', views.update_deck, name='update-deck'),
     path('reset-deck-progress/<uuid:id_deck>/', views.reset_deck_progress, name='reset-deck-progress'),
+    path('create-card/', views.create_card, name='create-card'),
+    path('generate-cards-with-ai/', views.generate_cards_with_ai, name='generate_cards_with_ai'),
+    path('update-card/<uuid:id_card>/', views.update_card, name='update-card'),
+    path('review-card/<uuid:id_card>/', views.review_card, name='review-card'),
+    path('delete-card/<uuid:id_card>/', views.delete_card, name='delete-card'),
 ]
