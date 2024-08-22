@@ -57,14 +57,19 @@ def create_deck(request):
         return Response(serializer.data, status=status.HTTP_201_CREATED)
     else:
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
+    
 @jwt_required
 @api_view(['GET'])
 def get_decks_by_user(request):
     id_user = request.custom_user.id
     decks = Deck.objects.filter(id_user=id_user)
-    
+            
     serializer = DeckSerializer(decks, many=True)
+            
+    for deck in serializer.data:
+        cards = Card.objects.filter(id_deck=deck['id'])
+        deck['cards_amount'] = cards.count()
+        
     return Response(serializer.data, status=status.HTTP_200_OK)
 
 @jwt_required
