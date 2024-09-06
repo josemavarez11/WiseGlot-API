@@ -21,8 +21,8 @@ def get_messages_by_user(request):
     messages = Message.objects.filter(id_user=id_user)
     serializer = MessageSerializer(messages, many=True)
 
-    if serializer.data == []:
-        return Response('No messages found', status.HTTP_204_NO_CONTENT)
+    # if serializer.data == []:
+    #     return Response('No messages found', status.HTTP_204_NO_CONTENT)
 
     formatted_data = [
         {
