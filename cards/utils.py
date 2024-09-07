@@ -35,7 +35,7 @@ def parse_cards_string_to_dict(cards_str):
     data = json.loads(cards_str)
     
     # Cambiar los valores del diccionario a formato con guiones bajos
-    cards_dict = {key: value.replace(' ', '_') for key, value in data.items()}
+    cards_dict = {key.replace('_', ' '): value.replace('_', ' ') for key, value in data.items()}
     
     return cards_dict
 

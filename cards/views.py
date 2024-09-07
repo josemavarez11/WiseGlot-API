@@ -192,6 +192,9 @@ def generate_cards_with_ai(request):
 
     if not (id_deck and cards_amount) or not (topic or user_prompt):
         return Response({'message': 'Missing data'}, status=status.HTTP_400_BAD_REQUEST)
+    
+    existing_cards = Card.objects.filter(id_deck=id_deck).values('val_card', 'mea_card')
+    existing_cards_dict = { card['val_card']: card['mea_card'] for card in list(existing_cards) }
 
     user_preferences = UserPreference.objects.filter(id_user=id_user).select_related(
         'id_native_language', 'id_language_to_study'
@@ -208,15 +211,20 @@ def generate_cards_with_ai(request):
             user_preferences[0].id_language_to_study.des_language,
             topic,
             cards_amount,
-            user_prompt
+            user_prompt,
+            existing_cards_dict
         )
+        
         cards_dict = parse_cards_string_to_dict(cards)
+
+        new_cards_data = []
         for key, value in cards_dict.items():
-            register_new_card(deck.id, key, value)
+            new_card = register_new_card(deck.id, key, value)
+            new_cards_data.append(new_card)
     except Exception as e:
         return Response({'message': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
     
-    return Response(cards, status=status.HTTP_201_CREATED)
+    return Response(new_cards_data, status=status.HTTP_201_CREATED)
 
 @jwt_required
 @api_view(['PUT'])
